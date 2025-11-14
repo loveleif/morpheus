@@ -45,6 +45,8 @@ import org.opencypher.okapi.impl.exception
   */
 case class Serialize(children: Seq[Expression]) extends Expression {
 
+  override protected def withNewChildrenInternal(newChildren: IndexedSeq[Expression]): Expression = copy(newChildren)
+
   override def dataType: DataType = BinaryType
 
   override def nullable: Boolean = false

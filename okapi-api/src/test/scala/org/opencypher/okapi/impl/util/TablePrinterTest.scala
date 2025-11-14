@@ -108,7 +108,7 @@ class TablePrinterTest extends ApiBaseTest {
     val header = Seq("String", "Integer", "Float", "Boolean")
     val data = Seq(Seq(CypherValue("foo"), CypherValue(42), CypherValue(42.23), CypherValue(true)))
 
-    implicit val f: CypherValue => String = v => v.toCypherString
+    implicit val f: CypherValue => String = v => v.toCypherString()
 
     toTable(header, data) should equal(
       """|╔════════╤═════════╤═══════╤═════════╗
@@ -127,7 +127,7 @@ class TablePrinterTest extends ApiBaseTest {
     val header = Seq("n", "r")
     val data = Seq(Seq(n, r))
 
-    implicit val f: CypherValue => String = v => v.toCypherString
+    implicit val f: CypherValue => String = v => v.toCypherString()
 
     println(toTable(header, data))
 

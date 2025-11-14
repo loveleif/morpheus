@@ -57,12 +57,13 @@ object GraphDdl {
 
     val graphTypes = ddlParts.graphTypes
       .keyBy(_.name)
+      .view
       .mapValues { graphType =>
         tryWithGraphType(graphType.name) {
           global.push(graphType.name, graphType.statements)
         }
       }
-      .view.force
+      .toMap
 
     val graphs = ddlParts.graphs
       .map { graph =>
@@ -407,7 +408,9 @@ object GraphDdl {
 
     graphTypePropertyKeys
       .keyBy(identity)
+      .view
       .mapValues(prop => mappings.getOrElse(prop, prop))
+      .toMap
   }
 
   // Helper extension methods
@@ -424,7 +427,7 @@ object GraphDdl {
   private def tryWithRel[T](relationshipTypeDefinition: RelationshipTypeDefinition)(block: => T): T =
     tryWithContext(s"Error in relationship type: $relationshipTypeDefinition")(block)
 
-  private implicit class TraversableOps[T, C[X] <: Traversable[X]](elems: C[T]) {
+  private implicit class IterableOps[T, C[X] <: Iterable[X]](elems: C[T]) {
     def keyBy[K](key: T => K): Map[K, T] =
       elems.map(t => key(t) -> t).toMap
 
@@ -585,6 +588,7 @@ case class ViewId(maybeSetSchema: Option[SetSchemaDefinition], parts: List[Strin
       malformed("Relative view identifier requires a preceding SET SCHEMA statement", view.mkString("."))
     case (Some(_), view) if view.size > 1 =>
       malformed("Relative view identifier must have exactly one segment", view.mkString("."))
+    case _ => throw new IllegalArgumentException(s"Failed to find table name")
   }
 }
 

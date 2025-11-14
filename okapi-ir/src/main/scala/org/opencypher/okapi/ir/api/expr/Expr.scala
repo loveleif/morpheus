@@ -36,6 +36,7 @@ import org.opencypher.okapi.ir.impl.BigDecimalSignatures.{Addition, Division, Mu
 import org.opencypher.okapi.trees.AbstractTreeNode
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 
 object Expr {
@@ -84,7 +85,7 @@ sealed abstract class Expr extends AbstractTreeNode[Expr] {
 }
 
 final case class AliasExpr(expr: Expr, alias: Var) extends Expr {
-  override val children: Array[Expr] = Array(expr)
+  override val children: ArraySeq[Expr] = ArraySeq(expr)
 
   override def cypherType: CypherType = alias.cypherType
 
@@ -229,7 +230,7 @@ final case class EndNode(rel: Expr)(val cypherType: CypherType) extends Expr {
 object FlattenOps {
 
   // TODO: Implement as a rewriter instead
-  implicit class RichExpressions(exprs: Traversable[Expr]) {
+  implicit class RichExpressions(exprs: Iterable[Expr]) {
 
     /**
       * Flattens child expressions
@@ -510,7 +511,7 @@ final case class DurationProperty(propertyOwner: Expr, key: PropertyKey) extends
 
 final case class MapExpression(items: Map[String, Expr]) extends Expr {
 
-  override def withoutType: String = s"{${items.mapValues(_.withoutType)}}"
+  override def withoutType: String = s"{${items.view.mapValues(_.withoutType).toMap}}"
 
   override def cypherType: CypherType = CTMap(items.map { case (key, value) => key -> value.cypherType })
 }
@@ -1327,9 +1328,9 @@ final case class ExistsPatternExpr(targetField: Var, ir: CypherQuery)
 final case class CaseExpr(alternatives: List[(Expr, Expr)], default: Option[Expr])
   (val cypherType: CypherType) extends Expr {
 
-  override val children: Array[Expr] = (default ++ alternatives.flatMap { case (cond, value) => Seq(cond, value) }).toArray
+  override val children: ArraySeq[Expr] = (default ++ alternatives.flatMap { case (cond, value) => Seq(cond, value) }).to(ArraySeq)
 
-  override def withNewChildren(newChildren: Array[Expr]): CaseExpr = {
+  override def withNewChildren(newChildren: ArraySeq[Expr]): CaseExpr = {
     val hasDefault = newChildren.length % 2 == 1
     val (newDefault, as) = if (hasDefault) {
       Some(newChildren.head) -> newChildren.tail

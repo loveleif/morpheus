@@ -26,7 +26,7 @@
  */
 package org.opencypher.morpheus.impl.convert
 
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Encoder, Row}
 import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.CalendarInterval
@@ -136,7 +136,7 @@ object SparkConversions {
             case (_, None) => true
             case _ => false
           }
-          if (containsNone) None else Some(CTMap(convertedFields.mapValues(_.get)))
+          if (containsNone) None else Some(CTMap(convertedFields.view.mapValues(_.get).toMap))
         case _ => None
       }
 
@@ -184,8 +184,7 @@ object SparkConversions {
       StructType(structFields)
     }
 
-    def rowEncoder: ExpressionEncoder[Row] =
-      RowEncoder(header.toStructType)
+    def rowEncoder: Encoder[Row] = RowEncoder.encoderFor(header.toStructType)
   }
 
   implicit class RowOps(row: Row) {

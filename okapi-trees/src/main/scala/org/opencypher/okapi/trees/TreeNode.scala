@@ -29,6 +29,7 @@ package org.opencypher.okapi.trees
 import cats.data.NonEmptyList
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.currentMirror
@@ -44,7 +45,7 @@ import scala.util.hashing.MurmurHash3
   * This class uses array operations instead of Scala collections, both for improved performance as well as to save
   * stack frames during recursion, which allows it to operate on trees that are several thousand nodes high.
   */
-abstract class TreeNode[T <: TreeNode[T]] extends Product with Traversable[T] {
+abstract class TreeNode[T <: TreeNode[T]] extends Product with Iterable[T] {
   self: T =>
 
   implicit protected def tt: TypeTag[T]
@@ -81,11 +82,13 @@ abstract class TreeNode[T <: TreeNode[T]] extends Product with Traversable[T] {
     }
   }
 
-  def withNewChildren(newChildren: Array[T]): T
+  def withNewChildren(newChildren: ArraySeq[T]): T
 
-  def children: Array[T] = Array.empty
+  def children: ArraySeq[T] = ArraySeq.empty[T]
 
-  override def hashCode: Int = MurmurHash3.productHash(self)
+  override def iterator: Iterator[T] = children.iterator
+
+  override def hashCode: Int = MurmurHash3.caseClassHash(self)
 
   def arity: Int = children.length
 
@@ -96,7 +99,7 @@ abstract class TreeNode[T <: TreeNode[T]] extends Product with Traversable[T] {
   override def size: Int = transform[Int] { case (_, childSizes) => childSizes.sum + 1 }
 
   def map[O <: TreeNode[O] : ClassTag](f: T => O): O = transform[O] { case (node, transformedChildren) =>
-    f(node).withNewChildren(transformedChildren.toArray)
+    f(node).withNewChildren(transformedChildren.to(ArraySeq))
   }
 
   override def foreach[O](f: T => O): Unit = transform[O] { case (node, _) => f(node) }

@@ -248,7 +248,7 @@ class LogicalPlanner(producer: LogicalOperatorProducer)
       // TODO: IRGraph
       case p: IRPatternGraph =>
         import org.opencypher.okapi.ir.impl.util.VarConverters.RichIrField
-        val baseElements = p.creates.baseFields.mapValues(_.toVar)
+        val baseElements = p.creates.baseFields.view.mapValues(_.toVar).toMap
 
         val clonePatternElements = p.clones.keys
 

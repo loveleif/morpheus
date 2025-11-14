@@ -192,17 +192,19 @@ final case class PropertyGraphSchemaImpl(
 
   override def nodePropertyKeysForCombinations(labelCombinations: Set[Set[String]]): PropertyKeys = {
     val allKeys = labelCombinations.toSeq.flatMap(nodePropertyKeys)
-    val propertyKeys = allKeys.groupBy(_._1).mapValues { seq =>
-      if (seq.size == labelCombinations.size && seq.distinct.size == 1) {
-        seq.head._2
-      } else if (seq.size < labelCombinations.size) {
-        seq.map(_._2).foldLeft(CTNull: CypherType)(_ join _)
-      } else {
-        seq.map(_._2).reduce(_ join _)
+    allKeys
+      .groupBy(_._1)
+      .view
+      .mapValues { seq =>
+        if (seq.size == labelCombinations.size && seq.distinct.size == 1) {
+          seq.head._2
+        } else if (seq.size < labelCombinations.size) {
+          seq.map(_._2).foldLeft(CTNull: CypherType)(_ join _)
+        } else {
+          seq.map(_._2).reduce(_ join _)
+        }
       }
-    }
-
-    propertyKeys.view.force
+      .toMap
   }
 
   override def relationshipPropertyKeyType(types: Set[String], key: String): Option[CypherType] = {
@@ -221,17 +223,19 @@ final case class PropertyGraphSchemaImpl(
     val relevantTypes = if (knownTypes.isEmpty) relationshipTypes else knownTypes
 
     val allKeys = relevantTypes.toSeq.flatMap(relationshipPropertyKeys)
-    val propertyKeys = allKeys.groupBy(_._1).mapValues { seq =>
-      if (seq.size == relevantTypes.size && seq.distinct.size == 1) {
-        seq.head._2
-      } else if (seq.size < relevantTypes.size) {
-        seq.map(_._2).foldLeft(CTNull: CypherType)(_ join _)
-      } else {
-        seq.map(_._2).reduce(_ join _)
+    allKeys
+      .groupBy(_._1)
+      .view
+      .mapValues { seq =>
+        if (seq.size == relevantTypes.size && seq.distinct.size == 1) {
+          seq.head._2
+        } else if (seq.size < relevantTypes.size) {
+          seq.map(_._2).foldLeft(CTNull: CypherType)(_ join _)
+        } else {
+          seq.map(_._2).reduce(_ join _)
+        }
       }
-    }
-
-    propertyKeys.view.force
+      .toMap
   }
 
   override def relationshipPropertyKeys(typ: String): PropertyKeys = relTypePropertyMap.properties(typ)
@@ -337,10 +341,11 @@ final case class PropertyGraphSchemaImpl(
     }
 
     // Map over the rest of the existing keys to mark them all nullable
-    val propertiesMarkedOptional = existing.filterKeys(k => !input.contains(k)).foldLeft(keysWithJoinedTypes) {
-      case (map, (key, propTyp)) =>
-        map.updated(key, propTyp.nullable)
-    }
+    val propertiesMarkedOptional = existing.view
+      .filterKeys(k => !input.contains(k))
+      .foldLeft(keysWithJoinedTypes) {
+        case (map, (key, propTyp)) => map.updated(key, propTyp.nullable)
+      }
 
     propertiesMarkedOptional
   }
@@ -411,7 +416,7 @@ final case class PropertyGraphSchemaImpl(
     }
 
     // take all label properties that might appear on the possible labels
-    val newLabelPropertyMap: LabelPropertyMap = this.labelPropertyMap.filterKeys(possibleLabels.contains)
+    val newLabelPropertyMap: LabelPropertyMap = this.labelPropertyMap.view.filterKeys(possibleLabels.contains).toMap
 
     // add labels that were specified in the constraints but are not present in source schema
     val updatedLabelPropertyMap = possibleLabels.foldLeft(newLabelPropertyMap) {
@@ -446,7 +451,7 @@ final case class PropertyGraphSchemaImpl(
   override def pretty: String =
     if (isEmpty) "empty schema"
     else {
-      import scala.compat.Platform.EOL
+      val EOL = System.lineSeparator()
 
       val builder = new StringBuilder
 

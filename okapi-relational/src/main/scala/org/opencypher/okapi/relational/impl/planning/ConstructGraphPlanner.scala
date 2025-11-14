@@ -194,19 +194,19 @@ object ConstructGraphPlanner {
     node: ConstructedNode
   ): Map[Expr, Expr] = {
 
-    val idTuple = node.v ->
+    val idTuple: (Expr, Expr) = node.v ->
       prefixId(generateId(columnIdPartition, numberOfColumnPartitions), maybeCreatedElementIdPrefix)
 
-    val copiedLabelTuples = node.baseElement match {
+    val copiedLabelTuples: Map[Expr, Expr] = node.baseElement match {
       case Some(origNode) => copyExpressions(inOp, node.v)(_.labelsFor(origNode))
       case None => Map.empty
     }
 
-    val createdLabelTuples = node.labels.map {
+    val createdLabelTuples: Map[Expr, Expr] = node.labels.map {
       label => HasLabel(node.v, label) -> TrueLit
     }.toMap
 
-    val propertyTuples = node.baseElement match {
+    val propertyTuples: Map[Expr, Expr] = node.baseElement match {
       case Some(origNode) => copyExpressions(inOp, node.v)(_.propertiesFor(origNode))
       case None => Map.empty
     }
@@ -366,7 +366,7 @@ object ConstructGraphPlanner {
 
     val clonedElementsToKeep = logicalPatternGraph.clones.filterNot {
       case (_, base) => logicalPatternGraph.onGraphs.contains(base.cypherType.graph.get)
-    }.mapValues(_.cypherType)
+    }.view.mapValues(_.cypherType).toMap
 
     clonedElementsToKeep.toSeq.flatMap {
       case (v, CTNode(labels, Some(sourceGraph))) =>

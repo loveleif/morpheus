@@ -39,7 +39,7 @@ private[graphddl] object GraphDdlException {
     s"$desc: $reference"
   )
 
-  def unresolved(desc: String, reference: Any, available: Traversable[Any]): Nothing = throw UnresolvedReferenceException(
+  def unresolved(desc: String, reference: Any, available: Iterable[Any]): Nothing = throw UnresolvedReferenceException(
     s"""$desc: $reference
        |Expected one of: ${available.mkString(", ")}""".stripMargin
   )

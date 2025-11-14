@@ -39,7 +39,7 @@ object CypherValueHelp {
       case CypherNull => Null
       case CypherString(s) => Str(s)
       case CypherList(l) => l.map(toJson)
-      case CypherMap(m) => m.mapValues(toJson).toSeq.sortBy(_._1)
+      case CypherMap(m) => m.view.mapValues(toJson).toSeq.sortBy(_._1)
       case Relationship(id, startId, endId, relType, properties) =>
         Obj(
           idJsonKey -> Str(formatValue(id)),

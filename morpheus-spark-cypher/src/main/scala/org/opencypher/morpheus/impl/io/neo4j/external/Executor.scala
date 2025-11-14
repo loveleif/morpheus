@@ -42,7 +42,7 @@ import scala.collection.JavaConverters._
 private object Executor {
 
   def toJava(parameters: Map[String, Any]): java.util.Map[String, Object] = {
-    parameters.mapValues(toJava).asJava
+    parameters.view.mapValues(toJava).toMap.asJava
   }
 
   private def toJava(x: Any): AnyRef = x match {
@@ -79,7 +79,7 @@ private object Executor {
         return res
       }
       val keys = peek.keys().asScala
-      val fields = keys.map(k => (k, peek.get(k).`type`())).map(keyType => CypherTypes.field(keyType))
+      val fields = keys.view.map(k => (k, peek.get(k).`type`())).map(keyType => CypherTypes.field(keyType)).toSeq
       val schema = StructType(fields)
 
       val it = result.asScala.map { record =>
@@ -106,7 +106,7 @@ private object Executor {
       case d: DateValue => java.sql.Date.valueOf(d.asLocalDate())
       case d: DurationValue =>
         val iso = d.asIsoDuration()
-        new CalendarInterval(iso.months().toInt, iso.nanoseconds() / 1000 + iso.days() * CalendarInterval.MICROS_PER_DAY)
+        new CalendarInterval(iso.months().toInt, iso.days().toInt, iso.nanoseconds() / 1000)
       case other => other.asObject()
     }
   }

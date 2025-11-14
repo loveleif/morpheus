@@ -33,7 +33,7 @@ object Bag {
   type Bag[T <: Any] = Map[T, Int]
 
   def apply[E](elements: E*): Bag[E] = {
-    elements.groupBy(identity).mapValues(_.size)
+    elements.groupMapReduce(identity)(_ => 1)(_ + _)
   }
 
   implicit class TraversableToBag[E](val t: Traversable[E]) {

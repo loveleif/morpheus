@@ -290,7 +290,7 @@ object RelationalPlanner {
       s" but got ${scanOp.header.elementVars}")
 
     scanOp
-      .assignScanName(varPatternElementMapping.mapValues(_.toVar).map(_.swap))
+      .assignScanName(varPatternElementMapping.view.map { case (v, p) => p.toVar -> v }.toMap)
       .switchContext(inOp.context)
   }
 

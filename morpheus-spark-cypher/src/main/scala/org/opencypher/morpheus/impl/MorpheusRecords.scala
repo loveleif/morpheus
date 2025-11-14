@@ -27,7 +27,6 @@
 package org.opencypher.morpheus.impl
 
 import java.util.Collections
-
 import org.apache.spark.sql._
 import org.opencypher.morpheus.api.MorpheusSession
 import org.opencypher.morpheus.impl.convert.SparkConversions._
@@ -40,6 +39,7 @@ import org.opencypher.okapi.relational.api.table.{RelationalCypherRecords, Relat
 import org.opencypher.okapi.relational.impl.table._
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.ArraySeq
 
 case class MorpheusRecordsFactory()(implicit morpheus: MorpheusSession) extends RelationalCypherRecordsFactory[DataFrameTable] {
 
@@ -131,8 +131,8 @@ trait RecordBehaviour extends RelationalCypherRecords[DataFrameTable] {
     toCypherMaps.foreachPartition(f)
   }
 
-  override def collect: Array[CypherMap] =
-    toCypherMaps.collect()
+  override def collect: ArraySeq[CypherMap] =
+    ArraySeq.unsafeWrapArray(toCypherMaps.collect())
 
 
   def toCypherMaps: Dataset[CypherMap] = {

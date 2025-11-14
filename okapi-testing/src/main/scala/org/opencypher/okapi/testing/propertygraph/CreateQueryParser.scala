@@ -238,7 +238,7 @@ object CreateGraphFactory extends InMemoryGraphFactory {
         case FunctionInvocation(_, FunctionName("date"), _, Seq(map: MapExpression)) =>
           for {
             dateMap <- processExpr(map)
-            res <- pure[ParsingContext, Any](parseDate(Left(dateMap.asInstanceOf[Map[String, Long]].mapValues(_.toInt))))
+            res <- pure[ParsingContext, Any](parseDate(Left(dateMap.asInstanceOf[Map[String, Long]].view.mapValues(_.toInt).toMap)))
           } yield res
 
         case FunctionInvocation(_, FunctionName("localdatetime"), _, Seq(dateString: StringLiteral)) =>

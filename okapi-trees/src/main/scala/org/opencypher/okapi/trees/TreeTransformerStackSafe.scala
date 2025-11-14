@@ -29,6 +29,7 @@ package org.opencypher.okapi.trees
 import cats.data.NonEmptyList
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 
 /**
@@ -154,7 +155,7 @@ case class BottomUpStackSafe[T <: TreeNode[T] : ClassTag](
 
   @inline final override def transformNode(node: T, rewrittenChildren: List[T], stack: Stack): NonEmptyStack = {
     val (currentRewrittenChildren, rewrittenForAncestors) = rewrittenChildren.splitAt(node.children.length)
-    val rewrittenNode = rule(node.withNewChildren(currentRewrittenChildren.toArray))
+    val rewrittenNode = rule(node.withNewChildren(currentRewrittenChildren.to(ArraySeq)))
     stack.push(Done(rewrittenNode :: rewrittenForAncestors))
   }
 }
@@ -183,7 +184,7 @@ case class TopDownStackSafe[T <: TreeNode[T] : ClassTag](
 
   @inline final override def transformNode(node: T, rewrittenChildren: List[T], stack: Stack): NonEmptyStack = {
     val (currentRewrittenChildren, rewrittenForAncestors) = rewrittenChildren.splitAt(node.children.length)
-    val rewrittenNode = node.withNewChildren(currentRewrittenChildren.toArray)
+    val rewrittenNode = node.withNewChildren(currentRewrittenChildren.to(ArraySeq))
     stack.push(Done(rewrittenNode :: rewrittenForAncestors))
   }
 

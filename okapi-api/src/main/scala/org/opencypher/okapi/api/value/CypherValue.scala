@@ -28,7 +28,6 @@ package org.opencypher.okapi.api.value
 
 import java.math.MathContext
 import java.util.Objects
-
 import org.opencypher.okapi.api.types._
 import org.opencypher.okapi.api.value.CypherValue.Element._
 import org.opencypher.okapi.api.value.CypherValue.Node._
@@ -37,6 +36,8 @@ import org.opencypher.okapi.impl.exception.{IllegalArgumentException, Unsupporte
 import org.opencypher.okapi.impl.temporal.Duration
 import ujson._
 
+import scala.collection.immutable.ArraySeq
+import scala.jdk.CollectionConverters.ListHasAsScala
 import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import scala.util.Try
@@ -67,13 +68,13 @@ object CypherValue {
         case jd: java.lang.Double => jd.toDouble
         case js: java.lang.String => js.toString
         case jb: java.lang.Boolean => jb.booleanValue
-        case jl: java.util.List[_] => seqToCypherList(jl.toArray)
+        case jl: java.util.List[_] => seqToCypherList(jl.asScala.toSeq)
         case dt: java.sql.Date => dt.toLocalDate
         case ts: java.sql.Timestamp => ts.toLocalDateTime
         case ld: java.time.LocalDate => ld
         case ldt: java.time.LocalDateTime => ldt
         case du: Duration => du
-        case a: Array[_] => seqToCypherList(a)
+        case a: Array[_] => seqToCypherList(ArraySeq.unsafeWrapArray(a))
         case s: Seq[_] => seqToCypherList(s)
         case m: Map[_, _] => m.map { case (k, cv) => k.toString -> CypherValue(cv) }
         case b: Byte => b.toLong
@@ -210,23 +211,23 @@ object CypherValue {
     def toCypherString()(implicit formatValue: Any => String): String = {
       this match {
         case CypherString(s) => s"'${escape(s)}'"
-        case CypherList(l) => l.map(_.toCypherString).mkString("[", ", ", "]")
+        case CypherList(l) => l.map(_.toCypherString()).mkString("[", ", ", "]")
         case CypherMap(m) =>
           m.toSeq
             .sortBy(_._1)
-            .map { case (k, v) => s"`${escape(k)}`: ${v.toCypherString}" }
+            .map { case (k, v) => s"`${escape(k)}`: ${v.toCypherString()}" }
             .mkString("{", ", ", "}")
         case Relationship(_, _, _, relType, props) =>
           s"[:`${escape(relType)}`${
             if (props.isEmpty) ""
-            else s" ${props.toCypherString}"
+            else s" ${props.toCypherString()}"
           }]"
         case Node(_, labels, props) =>
           val labelString =
             if (labels.isEmpty) ""
             else labels.toSeq.sorted.map(escape).mkString(":`", "`:`", "`")
           val propertyString = if (props.isEmpty) ""
-          else s"${props.toCypherString}"
+          else s"${props.toCypherString()}"
           Seq(labelString, propertyString)
             .filter(_.nonEmpty)
             .mkString("(", " ", ")")
@@ -236,9 +237,9 @@ object CypherValue {
 
     private def escape(str: String): String = {
       str
-        .replaceAllLiterally("""\""", """\\""")
-        .replaceAllLiterally("'", "\\'")
-        .replaceAllLiterally("\"", "\\\"")
+        .replace("""\""", """\\""")
+        .replace("'", "\\'")
+        .replace("\"", "\\\"")
     }
 
     private[opencypher] def isOrContainsNull: Boolean = isNull || {
@@ -315,7 +316,7 @@ object CypherValue {
 
     def updated(k: String, v: CypherValue): CypherMap = value.updated(k, v)
 
-    override def cypherType: CypherType = CTMap(value.mapValues(_.cypherType))
+    override def cypherType: CypherType = CTMap(value.view.mapValues(_.cypherType).toMap)
 
   }
 
@@ -357,14 +358,9 @@ object CypherValue {
         false
     }
 
-    protected def haveEqualValues(a: Iterator[Any], b: Iterator[Any]): Boolean = {
-      while (a.hasNext && b.hasNext) {
-        if (a.next != b.next) return false
-      }
-      a.hasNext == b.hasNext
-    }
+    protected def haveEqualValues(a: Iterator[Any], b: Iterator[Any]): Boolean = a.sameElements(b)
 
-    override def productPrefix: String = getClass.getSimpleName
+    override def productPrefix: String = getClass().getSimpleName
 
     override def toString = s"$productPrefix(${productIterator.mkString(", ")})"
 

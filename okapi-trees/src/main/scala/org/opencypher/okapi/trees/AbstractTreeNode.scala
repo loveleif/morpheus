@@ -28,6 +28,7 @@ package org.opencypher.okapi.trees
 
 import cats.data.NonEmptyList
 
+import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 import scala.reflect.runtime.currentMirror
 import scala.reflect.runtime.universe.{Type, TypeTag, typeOf, typeTag}
@@ -59,25 +60,27 @@ abstract class AbstractTreeNode[T <: AbstractTreeNode[T] : TypeTag] extends Tree
 
   override implicit protected def ct: ClassTag[T] = ClassTag[T](typeTag[T].mirror.runtimeClass(typeTag[T].tpe))
 
-  override val children: Array[T] = {
+  override val children: ArraySeq[T] = {
     if (productIterator.isEmpty) {
-      Array.empty[T]
+      ArraySeq.empty[T]
     } else {
       val copyMethod = AbstractTreeNode.copyMethod(self)
       lazy val treeType = typeOf[T].erasure
       lazy val paramTypes: Seq[Type] = copyMethod.symbol.paramLists.head.map(_.typeSignature).toIndexedSeq
-      productIterator.toArray.zipWithIndex.flatMap {
-        case (t: T, _) => Some(t)
-        case (o: Option[_], i) if paramTypes(i).typeArgs.head <:< treeType => o.asInstanceOf[Option[T]]
-        case (l: List[_], i) if paramTypes(i).typeArgs.head <:< treeType => l.asInstanceOf[List[T]]
-        case (nel: NonEmptyList[_], i) if paramTypes(i).typeArgs.head <:< treeType => nel.toList.asInstanceOf[List[T]]
-        case _ => Nil
-      }
+      productIterator.zipWithIndex
+        .flatMap {
+          case (t: T, _) => Some(t)
+          case (o: Option[_], i) if paramTypes(i).typeArgs.head <:< treeType => o.asInstanceOf[Option[T]]
+          case (l: List[_], i) if paramTypes(i).typeArgs.head <:< treeType => l.asInstanceOf[List[T]]
+          case (nel: NonEmptyList[_], i) if paramTypes(i).typeArgs.head <:< treeType => nel.toList.asInstanceOf[List[T]]
+          case _ => Nil
+        }
+        .to(ArraySeq)
     }
   }
 
-  @inline override def withNewChildren(newChildren: Array[T]): T = {
-    if (sameAsCurrentChildren(newChildren)) {
+  @inline override def withNewChildren(newChildren: ArraySeq[T]): T = {
+    if (children == newChildren) {
       self
     } else {
       val copyMethod = AbstractTreeNode.copyMethod(self)
@@ -124,9 +127,9 @@ abstract class AbstractTreeNode[T <: AbstractTreeNode[T] : TypeTag] extends Tree
   @inline final override def containsTree(other: T): Boolean = super.containsTree(other)
 
   @inline private final def updateConstructorParams(
-    newChildren: Array[T],
+    newChildren: ArraySeq[T],
     currentValuesAndTypes: List[(Any, Type)]
-  ): Array[Any] = {
+  ): ArraySeq[Any] = {
     // Returns true iff `instance` could be an element of List/NonEmptyList/Option container type `tpe`
     def couldBeElementOf(instance: Any, tpe: Type): Boolean = {
       currentMirror.reflect(instance).symbol.toType <:< tpe.typeArgs.head
@@ -162,7 +165,7 @@ abstract class AbstractTreeNode[T <: AbstractTreeNode[T] : TypeTag] extends Tree
             |Inferred constructor parameters: ${getClass.getSimpleName}(${constructorParams.mkString(", ")})""".stripMargin)
     }
 
-    constructorParams.toArray
+    constructorParams.to(ArraySeq)
   }
 
   @inline private final def sameAsCurrentChildren(newChildren: Array[T]): Boolean = {

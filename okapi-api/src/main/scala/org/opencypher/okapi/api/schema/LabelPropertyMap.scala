@@ -94,7 +94,7 @@ object LabelPropertyMap {
       * @param knownLabels labels for which the properties should be extracted
       * @return extracted label property map
       */
-    def filterForLabels(knownLabels: Set[String]): LabelPropertyMap = map.filterKeys(_.exists(knownLabels.contains))
+    def filterForLabels(knownLabels: Set[String]): LabelPropertyMap = map.view.filterKeys(_.exists(knownLabels.contains)).toMap
 
     /**
       * Returns all registered combinations of labels

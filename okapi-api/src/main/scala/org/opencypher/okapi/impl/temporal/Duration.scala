@@ -159,16 +159,15 @@ object Duration {
 
   def parse(durationString: String): Duration = {
     val durationRegex =
-      """^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d{1,6})?S)?)?$"""
-        .r("years", "months", "weeks", "days", "_", "hours", "minutes", "seconds", "_", "_")
+      """^P(?<years>\d+Y)?(?<months>\d+M)?(?<weeks>\d+W)?(?<days>\d+D)?(T(?<hours>\d+H)?(?<minutes>\d+M)?(?<seconds>\d+(\.\d{1,6})?S)?)?$""".r
 
     durationRegex.findFirstMatchIn(durationString) match {
       case Some(m) =>
         val superSecondMap = Seq("years", "months", "weeks", "days", "hours", "minutes")
           .map(id => id -> m.group(id))
           .filterNot(_._2.isNull)
+          .collect { case (key, value) if !value.isNull => key -> value.dropRight(1).toLong }
           .toMap
-          .mapValues(_.dropRight(1).toLong)
 
         val secondsMap = m.group("seconds") match {
           case s: String =>

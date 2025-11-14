@@ -28,6 +28,8 @@ package org.opencypher.okapi.api.table
 
 import org.opencypher.okapi.api.value.CypherValue.CypherMap
 
+import scala.collection.immutable.ArraySeq
+
 /**
   * Represents a table of records containing Cypher values.
   * Each column (or slot) in this table represents an evaluated Cypher expression.
@@ -49,6 +51,6 @@ trait CypherRecords extends CypherTable with CypherPrintable {
     *
     * WARNING: This operation may be very expensive as it may have to materialise the full result set.
     */
-  def collect: Array[CypherMap]
+  def collect: ArraySeq[CypherMap]
 
 }

@@ -33,15 +33,16 @@ import org.opencypher.okapi.api.io.PropertyGraphDataSource
 import org.opencypher.okapi.api.schema.PropertyGraphSchema
 import org.opencypher.okapi.impl.graph.QGNGenerator
 import org.scalactic.source
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.Tag
+import org.scalatest.funspec.AnyFunSpec
+
+import scala.util.Random
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FunSpec, Matchers, Tag}
-
-import scala.collection.convert.DecorateAsJava
-import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
-abstract class BaseTestSuite extends FunSpec with Matchers with MockitoSugar with DecorateAsJava {
+abstract class BaseTestSuite extends AnyFunSpec with Matchers with MockitoSugar {
 
   /* Shared test objects */
   val testNamespace = Namespace("testNamespace")

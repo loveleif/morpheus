@@ -46,7 +46,7 @@ final case class IllegalStateException(msg: String, cause: Option[Throwable] = N
 final case class IllegalArgumentException(expected: Any, actual: Any = "none", explanation: String = "", cause: Option[Throwable] = None)
   extends InternalException(
     s"""
-       |${if (explanation.nonEmpty) s"Explanation:$EOL\t$explanation$EOL" else ""}
+       |${if (explanation.nonEmpty) s"Explanation:${System.lineSeparator()}\t$explanation${System.lineSeparator()}" else ""}
        |Expected:
        |\t$expected
        |Found:

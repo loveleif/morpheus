@@ -36,8 +36,8 @@ object ExprSyntax {
 
 final class ExprOps(val e: Expr) extends AnyVal {
 
-  def canEvaluate(given: Set[Var]): Boolean =
-    (dependencies -- given).isEmpty
+  def canEvaluate(givenVars: Set[Var]): Boolean =
+    (dependencies -- givenVars).isEmpty
 
   def dependencies: Set[Var] = e.collect { case v: Var => v }.toSet
 

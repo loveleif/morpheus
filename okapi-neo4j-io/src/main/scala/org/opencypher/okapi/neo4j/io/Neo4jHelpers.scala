@@ -49,7 +49,7 @@ object Neo4jHelpers {
     * @return list of result rows with each row represented as a map
     */
   def cypher(query: String)(implicit session: Session): List[Map[String, CypherValue]] = {
-    session.run(query).list().asScala.map(_.asMap().asScala.mapValues(CypherValue(_)).toMap).toList
+    session.run(query).list().asScala.map(_.asMap().asScala.view.mapValues(CypherValue(_)).toMap).toList
   }
 
   /**

@@ -146,7 +146,7 @@ object GenCypherValue {
     endNode: TestNode[Id]
   ) {
     def toCreateQuery: String = {
-      s"CREATE ${startNode.toCypherString}-${relationship.toCypherString}->${endNode.toCypherString}"
+      s"CREATE ${startNode.toCypherString()}-${relationship.toCypherString()}->${endNode.toCypherString()}"
     }
   }
 

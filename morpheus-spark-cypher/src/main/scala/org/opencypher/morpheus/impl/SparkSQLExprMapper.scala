@@ -270,7 +270,7 @@ object SparkSQLExprMapper {
         case _: Range => sequence(child0, child1, convertedChildren.lift(2).getOrElse(ONE_LIT))
         case _: Replace => translate(child0, child1, child2)
         case _: Substring => child0.substr(child1 + ONE_LIT, convertedChildren.lift(2).getOrElse(length(child0) - child1))
-        case _: Split => new Column(StringSplit(child0.expr, child1.expr))
+        case _: Split => new Column(StringSplit(child0.expr, child1.expr, ONE_LIT.expr))
 
         // Mathematical functions
         case E => E_LIT
@@ -405,16 +405,16 @@ object SparkSQLExprMapper {
         }
 
         case MapProjection(mapOwner, items, includeAllProps) =>
-          val convertedItems = items.map { case (key, value) => value.asSparkSQLExpr.as(key) }
+          val convertedItems = items.view.map { case (key, value) => value.asSparkSQLExpr.as(key) }
           val itemKeys = items.map { case (propKey, _) => propKey }
           val intersectedMapItems = if (includeAllProps) {
             mapOwner.cypherType.material match {
               case x if x.subTypeOf(CTElement) =>
-                val uniqueEntityProps = header.propertiesFor(mapOwner).filterNot(p => itemKeys.contains(p.key.name))
+                val uniqueEntityProps = header.propertiesFor(mapOwner).view.filterNot(p => itemKeys.contains(p.key.name))
                 val propertyColumns = uniqueEntityProps.map(p => p.asSparkSQLExpr.as(p.key.name))
                 convertedItems ++ propertyColumns
               case CTMap(inner) =>
-                val uniqueMapKeys = inner.keys.filterNot(key => itemKeys.contains(key))
+                val uniqueMapKeys = inner.keys.view.filterNot(key => itemKeys.contains(key))
                 val uniqueMapColumns = uniqueMapKeys.map(key => child0.getField(key).as(key))
                 convertedItems ++ uniqueMapColumns
             }
@@ -422,7 +422,7 @@ object SparkSQLExprMapper {
           else {
             convertedItems
           }
-          create_struct(intersectedMapItems)
+          create_struct(intersectedMapItems.toSeq)
 
         // Aggregators
         case Count(_, distinct) =>

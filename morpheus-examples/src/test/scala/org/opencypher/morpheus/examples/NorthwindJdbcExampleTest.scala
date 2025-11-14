@@ -85,7 +85,7 @@ class NorthwindJdbcExampleTest extends ExampleTest {
         )
         resultTuples = resultTuples :+ tuple
       }
-      toTable(Seq("customer", "orderedAt", "handledBy", "employee"), resultTuples.map(row => row.map(_.toCypherString()))).dropRight(1)
+      toTable(Seq("customer", "orderedAt", "handledBy", "employee"), resultTuples.map(row => row.map(_.toCypherString()()))).dropRight(1)
     }
 
     // We only need the last query result from the expected example output

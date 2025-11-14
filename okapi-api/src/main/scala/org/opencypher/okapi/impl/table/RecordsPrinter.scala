@@ -48,7 +48,7 @@ object RecordsPrinter {
     }
 
     options.stream
-      .append(TablePrinter.toTable(columns, rows)(v => v.toCypherString))
+      .append(TablePrinter.toTable(columns, rows)(v => v.toCypherString()))
       .flush()
   }
 }

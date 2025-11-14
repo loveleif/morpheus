@@ -113,7 +113,7 @@ case class SqlPropertyGraphDataSource(
     ddlGraph: Graph,
     schema: PropertyGraphSchema
   ): Seq[MorpheusElementTable] = {
-    ddlGraph.nodeToViewMappings.mapValues(nvm => readTable(nvm.view)).map {
+    ddlGraph.nodeToViewMappings.view.mapValues(nvm => readTable(nvm.view)).map {
       case (nodeViewKey, df) =>
         val nodeViewMapping = ddlGraph.nodeToViewMappings(nodeViewKey)
 

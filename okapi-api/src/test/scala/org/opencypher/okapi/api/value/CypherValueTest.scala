@@ -46,20 +46,20 @@ class CypherValueTest extends ApiBaseTest {
       )
 
       mapping.foreach {
-        case (input, expected) => input.toCypherString should equal(expected)
+        case (input, expected) => input.toCypherString() should equal(expected)
       }
     }
 
     it("converts a CypherList") {
-      CypherList("foo", 123, false).toCypherString should equal("['foo', 123, false]")
-      CypherList().toCypherString should equal("[]")
+      CypherList("foo", 123, false).toCypherString() should equal("['foo', 123, false]")
+      CypherList().toCypherString() should equal("[]")
     }
 
     it("converts a CypherMap") {
-      CypherMap("foo" -> "bar", "foo\\bar" -> 42, "foo\"bar" -> false).toCypherString should equal(
+      CypherMap("foo" -> "bar", "foo\\bar" -> 42, "foo\"bar" -> false).toCypherString() should equal(
         "{`foo`: 'bar', `foo\\\"bar`: false, `foo\\\\bar`: 42}"
       )
-      CypherMap().toCypherString should equal("{}")
+      CypherMap().toCypherString() should equal("{}")
     }
 
     it("converts a CypherRelationship") {
@@ -70,7 +70,7 @@ class CypherValueTest extends ApiBaseTest {
       )
 
       mapping.foreach {
-        case (input, expected) => input.toCypherString should equal(expected)
+        case (input, expected) => input.toCypherString() should equal(expected)
       }
     }
 
@@ -82,7 +82,7 @@ class CypherValueTest extends ApiBaseTest {
       )
 
       mapping.foreach {
-        case (input, expected) => input.toCypherString should equal(expected)
+        case (input, expected) => input.toCypherString() should equal(expected)
       }
     }
   }

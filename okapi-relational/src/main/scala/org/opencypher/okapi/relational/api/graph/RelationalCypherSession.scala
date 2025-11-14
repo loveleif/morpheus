@@ -145,7 +145,7 @@ abstract class RelationalCypherSession[T <: Table[T] : TypeTag] extends CypherSe
 
     val (stmt, extractedLiterals, semState) = time("AST construction")(parser.process(query, inputFields)(CypherParser.defaultContext))
 
-    val extractedParameters: CypherMap = extractedLiterals.mapValues(v => CypherValue(v))
+    val extractedParameters: CypherMap = extractedLiterals.view.mapValues(v => CypherValue(v)).toMap
     val allParameters = queryParameters ++ extractedParameters
 
     logStageProgress("IR translation ...", newLine = false)

@@ -87,7 +87,7 @@ case class TCKGraph[C <: CypherSession](testGraphFactory: CypherTestGraphFactory
   override def execute(query: String, params: Map[String, TCKCypherValue], queryType: QueryType): (Graph, Result) = {
     queryType match {
       case InitQuery =>
-        val propertyGraph = testGraphFactory(CreateGraphFactory(query, params.mapValues(TckToCypherConverter.tckValueToCypherValue)))
+        val propertyGraph = testGraphFactory(CreateGraphFactory(query, params.view.mapValues(TckToCypherConverter.tckValueToCypherValue).toMap))
         copy(graph = propertyGraph) -> CypherValueRecords.empty
       case SideEffectQuery =>
         // this one is tricky, not sure how can do it without Cypher

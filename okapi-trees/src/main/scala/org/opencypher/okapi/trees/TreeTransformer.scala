@@ -26,6 +26,7 @@
  */
 package org.opencypher.okapi.trees
 
+import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 
 
@@ -50,21 +51,7 @@ abstract class TreeRewriterWithContext[T <: TreeNode[T] : ClassTag, C] extends T
 case class BottomUp[T <: TreeNode[T] : ClassTag](rule: PartialFunction[T, T]) extends TreeRewriter[T] {
 
   def transform(tree: T): T = {
-    val childrenLength = tree.children.length
-    val afterChildren = if (childrenLength == 0) {
-      tree
-    } else {
-      val updatedChildren = {
-        val childrenCopy = new Array[T](childrenLength)
-        var i = 0
-        while (i < childrenLength) {
-          childrenCopy(i) = transform(tree.children(i))
-          i += 1
-        }
-        childrenCopy
-      }
-      tree.withNewChildren(updatedChildren)
-    }
+    val afterChildren = tree.withNewChildren(tree.children.map(transform))
     if (rule.isDefinedAt(afterChildren)) rule(afterChildren) else afterChildren
   }
 
@@ -90,7 +77,7 @@ case class BottomUpWithContext[T <: TreeNode[T] : ClassTag, C](rule: PartialFunc
         updatedContext = pair._2
         i += 1
       }
-      tree.withNewChildren(updatedChildren)
+      tree.withNewChildren(ArraySeq.unsafeWrapArray(updatedChildren))
     }
     if (rule.isDefinedAt(afterChildren -> updatedContext)) {
       rule(afterChildren -> updatedContext)
@@ -109,21 +96,7 @@ case class TopDown[T <: TreeNode[T] : ClassTag](rule: PartialFunction[T, T]) ext
 
   def transform(tree: T): T = {
     val afterSelf = if (rule.isDefinedAt(tree)) rule(tree) else tree
-    val childrenLength = afterSelf.children.length
-    if (childrenLength == 0) {
-      afterSelf
-    } else {
-      val updatedChildren = {
-        val childrenCopy = new Array[T](childrenLength)
-        var i = 0
-        while (i < childrenLength) {
-          childrenCopy(i) = transform(afterSelf.children(i))
-          i += 1
-        }
-        childrenCopy
-      }
-      afterSelf.withNewChildren(updatedChildren)
-    }
+    afterSelf.withNewChildren(afterSelf.children.map(transform))
   }
 
 }

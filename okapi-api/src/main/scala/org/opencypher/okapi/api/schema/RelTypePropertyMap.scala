@@ -47,7 +47,7 @@ object RelTypePropertyMap {
 
     def properties(relKey: String): PropertyKeys = map.getOrElse(relKey, Map.empty)
 
-    def filterForRelTypes(relType: Set[String]): RelTypePropertyMap = map.filterKeys(relType.contains)
+    def filterForRelTypes(relType: Set[String]): RelTypePropertyMap = map.view.filterKeys(relType.contains).toMap
 
     def ++(other: RelTypePropertyMap): RelTypePropertyMap = map |+| other
 

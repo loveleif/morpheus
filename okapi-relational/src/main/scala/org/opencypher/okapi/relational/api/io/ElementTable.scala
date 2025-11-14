@@ -77,9 +77,9 @@ trait ElementTable[T <: Table[T]] extends RelationalCypherRecords[T] {
         case n :CTNode =>
           val nodeVar = Var(element.name)(n)
 
-          val idMapping = Map(nodeVar -> mapping.idKeys(element).head._2)
+          val idMapping = Map[Expr, String](nodeVar -> mapping.idKeys(element).head._2)
 
-          val propertyMapping = mapping.properties(element).map {
+          val propertyMapping = mapping.properties(element).map[Expr, String] {
             case (key, source) => ElementProperty(nodeVar, PropertyKey(key))(table.columnType(source)) -> source
           }
 

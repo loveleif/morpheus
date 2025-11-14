@@ -8,8 +8,10 @@ dependencies {
 
     implementation group: 'org.typelevel', name: "cats-core".scala(), version: ver.cats
     implementation group: 'junit', name: 'junit', version: ver.junit.main
-    implementation group: 'org.mockito', name: 'mockito-all', version: ver.mockito
+    implementation group: 'org.mockito', name: 'mockito-core', version: ver.mockito
     implementation group: 'org.scalatest', name: "scalatest".scala(), version: ver.scalatest
+    implementation group: 'org.scalatestplus', name: "junit-4-13".scala(), version: "${ver.scalatest}.1"
+    implementation group: 'org.scalatestplus', name: "mockito-5-12".scala(), version: "${ver.scalatest}.0"
 }
 
 // We ignore the license check here for unknown historic reasons.

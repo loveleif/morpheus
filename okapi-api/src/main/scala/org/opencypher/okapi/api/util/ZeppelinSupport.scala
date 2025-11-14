@@ -79,7 +79,7 @@ object ZeppelinSupport {
     def printTable()(implicit formatValue: Any => String = CypherValue.Format.defaultValueFormatter): Unit = {
       print(s"""
         |%table
-        |$toZeppelinTable
+        |${toZeppelinTable()}
         |""".stripMargin
       )
     }
@@ -107,7 +107,7 @@ object ZeppelinSupport {
       print(
         s"""
            |%network
-           |$toZeppelinGraph
+           |${toZeppelinGraph()}
         """.stripMargin)
     }
 
@@ -125,7 +125,7 @@ object ZeppelinSupport {
       s"""${columns.mkString("\t")}
          |${
         r.iterator.map { row =>
-          columns.map(row(_).toCypherString).mkString("\t")
+          columns.map(row(_).toCypherString()).mkString("\t")
         }.mkString("\n")
       }""".stripMargin
     }
@@ -175,7 +175,7 @@ object ZeppelinSupport {
       val types = rels.map(_.relType).toSet
 
       ZeppelinGraph.toZeppelinJson(
-        nodes.toIterator, rels.toIterator, labels, types
+        nodes.iterator, rels.iterator, labels, types
       ).render(2)
     }
   }
@@ -266,8 +266,8 @@ object ZeppelinSupport {
       labels: Set[String],
       types: Set[String]
     )(implicit formatValue: Any => String): Value = {
-      val nodeJsons = nodes.map(_.toZeppelinJson)
-      val relJson = rels.map(_.toZeppelinJson)
+      val nodeJsons = nodes.map(_.toZeppelinJson())
+      val relJson = rels.map(_.toZeppelinJson())
 
       Obj(
         "nodes" -> nodeJsons,
@@ -345,7 +345,7 @@ object ZeppelinSupport {
       print(
         s"""
            |%network
-           |${toZeppelinJson.render(2)}
+           |${toZeppelinJson().render(2)}
         """.stripMargin)
     }
 

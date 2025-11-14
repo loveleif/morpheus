@@ -30,7 +30,7 @@ import org.opencypher.okapi.ir.api.IRField
 
 import scala.language.implicitConversions
 
-sealed trait Endpoints extends Traversable[IRField] {
+sealed trait Endpoints extends Iterable[IRField] {
   def contains(f: IRField): Boolean
 }
 
@@ -61,6 +61,7 @@ sealed trait IdenticalEndpoints extends Endpoints {
   def field: IRField
 
   final override def foreach[U](f: IRField => U): Unit = f(field)
+  override def iterator: Iterator[IRField] = Iterator(field)
 }
 
 sealed trait DifferentEndpoints extends Endpoints {
@@ -70,4 +71,6 @@ sealed trait DifferentEndpoints extends Endpoints {
   def flip: DifferentEndpoints
 
   override def foreach[U](f: IRField => U): Unit = { f(source); f(target) }
+
+  final override def iterator: Iterator[IRField] = Iterator(source, target)
 }

@@ -44,7 +44,7 @@ class MorpheusLiteralTests extends MorpheusTestSuite with Checkers with ScanGrap
 
   it("round trip for supported literals") {
     check(Prop.forAll(supportedLiteral) { v: CypherValue =>
-      val query = s"RETURN ${v.toCypherString} AS result"
+      val query = s"RETURN ${v.toCypherString()} AS result"
       val result = morpheus.cypher(query).records.collect.toList
       val expected = List(CypherMap("result" -> v))
       Claim(result == expected)
@@ -53,7 +53,7 @@ class MorpheusLiteralTests extends MorpheusTestSuite with Checkers with ScanGrap
 
   it("round trip for nodes") {
     check(Prop.forAll(node) { n: Node[CypherInteger] =>
-      val graph = initGraph(s"CREATE ${n.toCypherString}")
+      val graph = initGraph(s"CREATE ${n.toCypherString()}")
       val query = s"MATCH (n) RETURN n"
       val result = TestNode(graph.cypher(query).records.collect.head("n").cast[Node[_]])
       Claim(result == n)

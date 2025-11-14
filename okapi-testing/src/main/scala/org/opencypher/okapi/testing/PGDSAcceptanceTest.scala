@@ -71,7 +71,7 @@ trait PGDSAcceptanceTest[Session <: CypherSession, Graph <: PropertyGraph] {
     }
 
     def releasePgds(implicit ctx: TestContext): Unit = {
-      pgds.graphNames.foreach(pgds.delete)
+      pgds().graphNames.foreach(pgds().delete)
     }
 
     def releaseSession(implicit ctx: TestContext): Unit = {
@@ -85,7 +85,7 @@ trait PGDSAcceptanceTest[Session <: CypherSession, Graph <: PropertyGraph] {
 
   case class TestContext(session: Session, pgds: PropertyGraphDataSource)
 
-  lazy val graph: Map[GraphName, Graph] = testCreateGraphStatements.mapValues(initGraph)
+  lazy val graph: Map[GraphName, Graph] = testCreateGraphStatements.view.mapValues(initGraph).toMap
 
   def allScenarios: List[Scenario] = cypher10Scenarios
 

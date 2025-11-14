@@ -267,7 +267,7 @@ case class RecordHeader(exprToColumn: Map[Expr, String]) {
         case nonVar => Set(nonVar)
       }
     }
-    val selectMappings = headerWithAliases.exprToColumn.filterKeys(selectExpressions.contains)
+    val selectMappings = headerWithAliases.exprToColumn.view.filterKeys(selectExpressions.contains).toMap
     RecordHeader(selectMappings)
   }
 

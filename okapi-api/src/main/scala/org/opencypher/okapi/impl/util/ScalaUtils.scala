@@ -30,7 +30,7 @@ object ScalaUtils {
 
   implicit class FoldUtils[V](value: V) {
 
-    def foldLeftOver[T](trav: TraversableOnce[T])(op: (V, T) => V): V =
-      trav.foldLeft(value)(op)
+    def foldLeftOver[T](trav: IterableOnce[T])(op: (V, T) => V): V =
+      trav.iterator.foldLeft(value)(op)
   }
 }

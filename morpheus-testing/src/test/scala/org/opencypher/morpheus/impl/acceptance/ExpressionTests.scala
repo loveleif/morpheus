@@ -420,7 +420,7 @@ class ExpressionTests extends MorpheusTestSuite with ScanGraphInit with Checkers
 
   it("supports integer addition") {
     check(Prop.forAll(integer, integer) { (i1: CypherInteger, i2: CypherInteger) =>
-      val query = s"RETURN ${i1.toCypherString} + ${i2.toCypherString} AS result"
+      val query = s"RETURN ${i1.toCypherString()} + ${i2.toCypherString()} AS result"
       if (BigInt(i1.unwrap) + BigInt(i2.unwrap) != BigInt(i1.unwrap + i2.unwrap)) {
         // Long over-/underflow
         val e = the[ParsingException] thrownBy morpheus.cypher(query).records.toMaps
@@ -435,7 +435,7 @@ class ExpressionTests extends MorpheusTestSuite with ScanGraphInit with Checkers
 
   it("supports float addition") {
     check(Prop.forAll(float, float) { (f1: CypherFloat, f2: CypherFloat) =>
-      val query = s"RETURN ${f1.toCypherString} + ${f2.toCypherString} AS result"
+      val query = s"RETURN ${f1.toCypherString()} + ${f2.toCypherString()} AS result"
       val result = morpheus.cypher(query).records.toMaps
       val expected = Bag(CypherMap("result" -> (f1.unwrap + f2.unwrap)))
       Claim(result == expected)

@@ -167,7 +167,7 @@ final case class Pattern(
         val newComponents = links
           .foldLeft(components) { case (m, l) => m - l }
           .updated(newCount, newPattern)
-        val newFields = fieldToComponentIndex.mapValues(l => if (links(l)) newCount else l)
+        val newFields = fieldToComponentIndex.view.mapValues(l => if (links(l)) newCount else l).toMap
         computeComponents(tail, newComponents, newCount, newFields)
       }
 
